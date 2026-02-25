@@ -1,0 +1,66 @@
+using CarService3.BL;
+using CarService3.DL;
+using CarService3.DL.Interfaces;
+using CarService3.Host.Validators;
+using FluentValidation;
+using Mapster;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Sinks.SystemConsole.Themes;
+
+namespace CarService3.Host
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+
+            Log.Logger = new LoggerConfiguration()
+            .ReadFrom.Configuration(builder.Configuration)
+            .Enrich.FromLogContext()
+            .WriteTo.Console(theme: AnsiConsoleTheme.Code)
+            .CreateLogger();
+
+            builder.Host.UseSerilog();
+
+            // Add services to the container.
+            builder.Services
+                .AddValidatorsFromAssemblyContaining<AddCustomerValidator>();
+
+            builder.Services
+                .AddDataLayer(builder.Configuration)
+                .AddBusinessLogicLayer();
+
+            builder.Services.AddMapster();
+
+            builder.Services.AddControllers();
+         
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Car Service 2", Version = "v1" });
+            });
+
+            builder.Services.AddHealthChecks();
+
+            var app = builder.Build();
+            // Configure the HTTP request pipeline.
+
+            app.MapHealthChecks("/health");
+
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+            app.UseSwaggerUI(options =>
+            {
+                options.SwaggerEndpoint("v1/swagger.json", "Car Service 2 V1");
+            });
+
+            app.UseSwagger();
+
+            app.Run();
+        }
+    }
+}
