@@ -13,18 +13,18 @@ namespace CarService3.DL.Repositories
             _logger = logger;
         }
 
-        public void Add(Customer? customer)
+        public async Task Add(Customer? customer)
         {
             if (customer == null) return;
 
-            MyStaticDb.StaticDb.Customers.Add(customer);
+            await Task.Run(() => MyStaticDb.StaticDb.Customers.Add(customer));
         }
 
-        public List<Customer> GetAll()
+        public async Task<List<Customer>> GetAll()
         {
             try
             {
-                return MyStaticDb.StaticDb.Customers;
+                return await Task.FromResult(MyStaticDb.StaticDb.Customers);
             }
             catch (Exception e)
             {
@@ -34,24 +34,24 @@ namespace CarService3.DL.Repositories
             return new List<Customer>();
         }
 
-        public Customer? GetById(Guid id)
+        public async Task<Customer?> GetById(Guid id)
         {
             if (id == Guid.Empty) return null;
 
-            return MyStaticDb.StaticDb
+            return await Task.FromResult(MyStaticDb.StaticDb
                 .Customers
-                .FirstOrDefault(c => c.Id == id);
+                .FirstOrDefault(c => c.Id == id));
         }
 
-        public void Delete(Guid id)
+        public async Task Delete(Guid id)
         {
             if (id == Guid.Empty) return;
 
-            var customer = GetById(id);
+            var customer = await Task.Run(() => GetById(id));
 
             if (customer != null)
             {
-                MyStaticDb.StaticDb.Customers.Remove(customer);
+                await Task.Run(() => MyStaticDb.StaticDb.Customers.Remove(customer));
             }
         }
     }

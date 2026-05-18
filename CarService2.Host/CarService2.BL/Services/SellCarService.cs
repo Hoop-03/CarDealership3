@@ -17,8 +17,10 @@ namespace CarService3.BL.Services
 
         public SellCarResult? SellCar(Guid customerId, Guid carId)
         {
-            var customer = _customerService.GetById(customerId);
+            var customerTask = _customerService.GetById(customerId);
             var car = _carRepository.GetById(carId);
+
+            var customer = customerTask.Result; // Ensure the task is awaited or resolved
 
             if (customer == null || car == null)
             {
